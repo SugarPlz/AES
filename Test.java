@@ -25,13 +25,16 @@ public class Test {
 
 	static word[] toWordArr(byte[] b) {
 		int len = b.length / 4;
-		if (b.length % 4 != 0) len++;
+		if (b.length % 4 != 0) {
+			len++;
+		}
 		word[] w = new word[len];
 		for (int i = 0; i < len; i++) {
 			byte[] c = new byte[4];
 			if (i * 4 < b.length) {
-				for (int j = 0; j < 4; j++)
+				for (int j = 0; j < 4; j++) {
 					c[j] = b[i * 4 + j];
+				}
 			}
 			w[i] = new word(c);
 		}
@@ -40,8 +43,9 @@ public class Test {
 
 	static String wordArrStr(word[] w) {
 		String str = "";
-		for (word word : w)
+		for (word word : w) {
 			str += word;
+		}
 		return str;
 	}
 }
