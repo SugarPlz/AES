@@ -4,8 +4,8 @@ public class AES {
     static int Nb;                 //数据块字数
     static int Nk;                 //密钥字数
     static int Nr;                 //迭代轮数
-    static word[][] RoundKey;      //加密轮密钥
-    static word[][] InvRoundKey;   //解密轮密钥
+    static Word[][] RoundKey;      //加密轮密钥
+    static Word[][] InvRoundKey;   //解密轮密钥
 
     /**
      * 加密
@@ -14,15 +14,15 @@ public class AES {
      * @param CipherKey 4、6或8个字长度的密钥
      * @return
      */
-    public static word[] encrypt(word[] plaintext, word[] CipherKey) {
+    public static Word[] encrypt(Word[] plaintext, Word[] CipherKey) {
         Nb = 4;
         Nk = CipherKey.length;
         Nr = Nk + 6;
         //加密密钥扩展
         RoundKey = KeyExpansion(CipherKey);
-        word[] ciphertext = new word[plaintext.length];
+        Word[] ciphertext = new Word[plaintext.length];
         for (int i = 0; i < plaintext.length; i++)
-            ciphertext[i] = new word(plaintext[i]);
+            ciphertext[i] = new Word(plaintext[i]);
         //初始轮密钥加
         ciphertext = AddRoundKey(ciphertext, RoundKey[0]);
         //轮函数
@@ -48,15 +48,15 @@ public class AES {
      * @param CipherKey  4、6或8个字长度的密钥
      * @return
      */
-    public static word[] decrypt(word[] ciphertext, word[] CipherKey) {
+    public static Word[] decrypt(Word[] ciphertext, Word[] CipherKey) {
         Nb = 4;
         Nk = CipherKey.length;
         Nr = Nk + 6;
         //解密密钥扩展
         InvRoundKey = InvKeyExpansion(CipherKey);
-        word[] plaintext = new word[ciphertext.length];
+        Word[] plaintext = new Word[ciphertext.length];
         for (int i = 0; i < ciphertext.length; i++) {
-            plaintext[i] = new word(ciphertext[i]);
+            plaintext[i] = new Word(ciphertext[i]);
         }
         //初始轮密钥加
         plaintext = AddRoundKey(plaintext, InvRoundKey[Nr]);
@@ -82,11 +82,11 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] ByteSub(word[] state) {
+    static Word[] ByteSub(Word[] state) {
         for (int i = 0; i < Nb; i++) {
             for (int j = 0; j < 4; j++) {
                 //乘法逆代替
-                state[i].word[j] = word.inverse(state[i].word[j]);
+                state[i].word[j] = Word.inverse(state[i].word[j]);
                 //仿射变换
                 state[i].word[j] = AffineTransformation(state[i].word[j], 'C');
             }
@@ -100,7 +100,7 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] ShiftRow(word[] state) {
+    static Word[] ShiftRow(Word[] state) {
         byte[][] b = new byte[4][Nb];
         for (int j = 0; j < Nb; j++) {
             for (int i = 0; i < 4; i++) {
@@ -130,11 +130,11 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] MixColumn(word[] state) {
+    static Word[] MixColumn(Word[] state) {
         byte[] b = {(byte) 0x02, (byte) 0x01, (byte) 0x01, (byte) 0x03};
-        word a = new word(b);
+        Word a = new Word(b);
         for (int i = 0; i < Nb; i++) {
-            state[i] = word.multiply(a, state[i]);
+            state[i] = Word.multiply(a, state[i]);
         }
         return state;
     }
@@ -146,9 +146,9 @@ public class AES {
      * @param key
      * @return
      */
-    static word[] AddRoundKey(word[] state, word[] key) {
+    static Word[] AddRoundKey(Word[] state, Word[] key) {
         for (int i = 0; i < Nb; i++) {
-            state[i] = word.add(state[i], key[i]);
+            state[i] = Word.add(state[i], key[i]);
         }
         return state;
     }
@@ -159,37 +159,37 @@ public class AES {
      * @param CipherKey
      * @return
      */
-    static word[][] KeyExpansion(word[] CipherKey) {
-        word[] W = new word[Nb * (Nr + 1)];
+    static Word[][] KeyExpansion(Word[] CipherKey) {
+        Word[] W = new Word[Nb * (Nr + 1)];
         //密钥扩展
-        word Temp;
+        Word Temp;
         if (Nk <= 6) {
             for (int i = 0; i < Nk; i++) {
                 W[i] = CipherKey[i];
             }
             for (int i = Nk; i < W.length; i++) {
-                Temp = new word(W[i - 1]);
+                Temp = new Word(W[i - 1]);
                 if (i % Nk == 0) {
-                    Temp = word.add(SubByte(Rotl(Temp)), Rcon(i / Nk));
+                    Temp = Word.add(SubByte(Rotl(Temp)), Rcon(i / Nk));
                 }
-                W[i] = word.add(W[i - Nk], Temp);
+                W[i] = Word.add(W[i - Nk], Temp);
             }
         } else {
             for (int i = 0; i < Nk; i++) {
                 W[i] = CipherKey[i];
             }
             for (int i = Nk; i < W.length; i++) {
-                Temp = new word(W[i - 1]);
+                Temp = new Word(W[i - 1]);
                 if (i % Nk == 0) {
-                    Temp = word.add(SubByte(Rotl(Temp)), Rcon(i / Nk));
+                    Temp = Word.add(SubByte(Rotl(Temp)), Rcon(i / Nk));
                 } else if (i % Nk == 4) {
                     Temp = SubByte(Temp);
                 }
-                W[i] = word.add(W[i - Nk], Temp);
+                W[i] = Word.add(W[i - Nk], Temp);
             }
         }
         //轮密钥选择
-        word[][] RoundKey = new word[Nr + 1][Nb];
+        Word[][] RoundKey = new Word[Nr + 1][Nb];
         for (int i = 0; i < Nr + 1; i++) {
             for (int j = 0; j < Nb; j++) {
                 RoundKey[i][j] = W[Nb * i + j];
@@ -204,13 +204,13 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] InvByteSub(word[] state) {
+    static Word[] InvByteSub(Word[] state) {
         for (int i = 0; i < Nb; i++) {
             for (int j = 0; j < 4; j++) {
                 //仿射变换
                 state[i].word[j] = AffineTransformation(state[i].word[j], 'D');
                 //乘法逆代替
-                state[i].word[j] = word.inverse(state[i].word[j]);
+                state[i].word[j] = Word.inverse(state[i].word[j]);
             }
         }
         return state;
@@ -222,7 +222,7 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] InvShiftRow(word[] state) {
+    static Word[] InvShiftRow(Word[] state) {
         byte[][] b = new byte[4][Nb];
         for (int j = 0; j < Nb; j++) {
             for (int i = 0; i < 4; i++) {
@@ -252,11 +252,11 @@ public class AES {
      * @param state
      * @return
      */
-    static word[] InvMixColumn(word[] state) {
+    static Word[] InvMixColumn(Word[] state) {
         byte[] b = {(byte) 0x0E, (byte) 0x09, (byte) 0x0D, (byte) 0x0B};
-        word a = new word(b);
+        Word a = new Word(b);
         for (int i = 0; i < Nb; i++) {
-            state[i] = word.multiply(a, state[i]);
+            state[i] = Word.multiply(a, state[i]);
         }
         return state;
     }
@@ -267,8 +267,8 @@ public class AES {
      * @param CipherKey
      * @return
      */
-    static word[][] InvKeyExpansion(word[] CipherKey) {
-        word[][] InvRoundKey = KeyExpansion(CipherKey);
+    static Word[][] InvKeyExpansion(Word[] CipherKey) {
+        Word[][] InvRoundKey = KeyExpansion(CipherKey);
         for (int i = 1; i < Nr; i++) {
             InvRoundKey[i] = InvMixColumn(InvRoundKey[i]);
         }
@@ -276,19 +276,19 @@ public class AES {
     }
 
     /**************************************************************************************************/
-    static word SubByte(word a) {
-        word w = new word(a);
+    static Word SubByte(Word a) {
+        Word w = new Word(a);
         for (int i = 0; i < 4; i++) {
             //乘法逆代替
-            w.word[i] = word.inverse(w.word[i]);
+            w.word[i] = Word.inverse(w.word[i]);
             //仿射变换
             w.word[i] = AffineTransformation(w.word[i], 'C');
         }
         return w;
     }
 
-    static word Rotl(word a) {
-        word w = new word(a);
+    static Word Rotl(Word a) {
+        Word w = new Word(a);
         byte b = w.word[0];
         for (int i = 0; i < 3; i++) {
             w.word[i] = w.word[i + 1];
@@ -297,11 +297,11 @@ public class AES {
         return w;
     }
 
-    static word Rcon(int n) {
-        word Rcon = new word(new byte[4]);
+    static Word Rcon(int n) {
+        Word Rcon = new Word(new byte[4]);
         byte RC = 1;
         for (int i = 1; i < n; i++) {
-            RC = word.xtime(RC);
+            RC = Word.xtime(RC);
         }
         Rcon.word[0] = RC;
         return Rcon;
